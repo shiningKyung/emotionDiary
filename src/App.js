@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import './App.css';
 import DiaryEditor from './DiaryEditor';
 import DiaryList from './DiaryList';
@@ -37,22 +37,25 @@ function App() {
   },[])
 
   // setData함수를 포함한, 일기배열에 새로운 데이터를 추가해줄 함수
-  const onCreate = (author, content, emotion) => {
-    const created_date = new Date().getTime();
-    const newItem = {
-      author,
-      content,
-      emotion,
-      created_date,
-      id: dataId.current,
-    };
-    dataId.current += 1;
-    setData([newItem, ...data]);
-  };
+  const onCreate = useCallback(
+    (author, content, emotion) => {
+      const created_date = new Date().getTime();
+      const newItem = {
+        author,
+        content,
+        emotion,
+        created_date,
+        id: dataId.current,
+      };
+      dataId.current += 1;
+      setData((data)=>[newItem, ...data]);
+    },
+    
+    []
+  );
 
   // setData함수를 포함한, 일기배열에 특정 아이템 제외할 함수
   const onRemove = (targetId) => {
-    console.log(`${targetId}가 삭제되었습니다`);
     const newDiaryList = data.filter((it) => it.id !== targetId);
     setData(newDiaryList);
   };
@@ -69,8 +72,6 @@ function App() {
 
   // 데이터분석
   const getDiaryAnalysis = useMemo(() => {
-    console.log("일기분석 시작");
-
     const goodCount = data.filter((it) => it.emotion >= 3).length;
     const badCount = data.length - goodCount;
     const goodRatio = (goodCount / data.length) * 100;
