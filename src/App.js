@@ -55,20 +55,19 @@ function App() {
   );
 
   // setData함수를 포함한, 일기배열에 특정 아이템 제외할 함수
-  const onRemove = (targetId) => {
-    const newDiaryList = data.filter((it) => it.id !== targetId);
-    setData(newDiaryList);
-  };
+  const onRemove = useCallback((targetId) => {
+    setData(data => data.filter((it) => it.id !== targetId));
+  }, []);
 
   // 이벤트받고 데이터를 내려보내줄
   // 본문수정 데이터 업데이트 함수
-  const onEdit = (targetId, newContent) => {
+  const onEdit = useCallback((targetId, newContent) => {
     setData(
       data.map((it) => 
         it.id === targetId ? {...it, content: newContent} : it
       )
     );
-  };
+  }, []);
 
   // 데이터분석
   const getDiaryAnalysis = useMemo(() => {
