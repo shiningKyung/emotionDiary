@@ -1,13 +1,40 @@
-import { useCallback, useEffect, useRef, useState, useMemo } from "react";
+import { useCallback, useEffect, useRef, useMemo, useReducer } from "react";
 import './App.css';
 import DiaryEditor from './DiaryEditor';
 import DiaryList from './DiaryList';
 
-// https://jsonplaceholder.typicode.com/comments
+const reducer = (state, action) => {
+  switch (action.type) {
+    case 'INIT': {
+      return action.data;
+    }
+    case 'CREATE': {
+      const created_date = new Date().getTime();
+      const newItem = {
+        ...action.data,
+        created_date
+      }
+      return [newItem, ...state];
+    }
+    case 'REMOVE': {
+      return state.filter((it)=>it.id !== action.targetId);
+    }
+    case 'EDIT': {
+      return state.map((it) => 
+        it.id === action.targetId? 
+        {...it, content:action.newContent} : it
+      );
+    }
+    default :
+      return state;
+  }
+}
 
-function App() {
+const App = () => {
   // 일기목록 배열 State
-  const [data, setData] = useState([]);
+  // const [data, setData] = useState([]);
+  const [data, dispatch] = useReducer(reducer, [])
+  
   // 일기 게시물아이디
   const dataId = useRef(0);
 
@@ -26,9 +53,9 @@ function App() {
         created_date : new Date().getTime(),
         id : dataId.current++
       }
-    })
+    });
 
-    setData(initData);
+    dispatch({type:"INIT", data:initData})
   };
 
   // 마운트시점에 api 호출
@@ -39,34 +66,20 @@ function App() {
   // setData함수를 포함한, 일기배열에 새로운 데이터를 추가해줄 함수
   const onCreate = useCallback(
     (author, content, emotion) => {
-      const created_date = new Date().getTime();
-      const newItem = {
-        author,
-        content,
-        emotion,
-        created_date,
-        id: dataId.current,
-      };
+      dispatch({type:'CREATE', data:{author, content, emotion, id:dataId.current}})
       dataId.current += 1;
-      setData((data)=>[newItem, ...data]);
     },
-    
     []
   );
 
   // setData함수를 포함한, 일기배열에 특정 아이템 제외할 함수
   const onRemove = useCallback((targetId) => {
-    setData(data => data.filter((it) => it.id !== targetId));
+    dispatch({type:"REMOVE", targetId})
   }, []);
 
-  // 이벤트받고 데이터를 내려보내줄
-  // 본문수정 데이터 업데이트 함수
+  // 이벤트받고 데이터를 내려보내줄 본문수정 데이터 업데이트 함수
   const onEdit = useCallback((targetId, newContent) => {
-    setData(
-      data.map((it) => 
-        it.id === targetId ? {...it, content: newContent} : it
-      )
-    );
+    dispatch({type:"EDIT", targetId, newContent})
   }, []);
 
   // 데이터분석
