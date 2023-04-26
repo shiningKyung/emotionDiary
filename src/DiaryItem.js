@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import { DiaryDispatchContext } from "./App";
 
 const DiaryItem = ({ 
     author, 
@@ -6,12 +7,9 @@ const DiaryItem = ({
     created_date,
     emotion,
     id,
-    onRemove,
-    onEdit,
 }) => {
-    useEffect (() => {
-        console.log(`${id}번 째 아이템 렌더`);
-    });
+
+    const {onRemove, onEdit} = useContext(DiaryDispatchContext)
 
     // 수정버튼 눌렀을때 상태 핸들링
     const [isEdit, setIsEdit] = useState(false);
